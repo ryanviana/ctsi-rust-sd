@@ -14,7 +14,9 @@ apt install -y --no-install-recommends \
     build-essential=12.9ubuntu3 \
     ca-certificates=20230311ubuntu0.22.04.1 \
     g++-riscv64-linux-gnu=4:11.2.0--1ubuntu1 \
-    wget=1.21.2-2ubuntu1
+    wget=1.21.2-2ubuntu1 \
+    git=1:2.34.1-1ubuntu1.9 \
+    libssl-dev=3.0.2-0ubuntu1.10
 EOF
 
 RUN set -eux; \
@@ -40,7 +42,12 @@ RUN set -eux; \
 RUN rustup target add riscv64gc-unknown-linux-gnu
 
 WORKDIR /opt/cartesi/dapp
-COPY . .
+
+# Clone the diffusers-rs repository
+RUN git clone https://github.com/LaurentMazare/diffusers-rs.git
+WORKDIR /opt/cartesi/dapp/diffusers-rs
+
+# Build the diffusers-rs project
 RUN cargo build --release
 
 FROM --platform=linux/riscv64 riscv64/ubuntu:22.04
@@ -66,9 +73,9 @@ EOF
 ENV PATH="/opt/cartesi/bin:/opt/cartesi/dapp:${PATH}"
 
 WORKDIR /opt/cartesi/dapp
-COPY --from=builder /opt/cartesi/dapp/target/riscv64gc-unknown-linux-gnu/release/dapp .
+COPY --from=builder /opt/cartesi/dapp/diffusers-rs/target/riscv64gc-unknown-linux-gnu/release/diffusers-rs .
 
 ENV ROLLUP_HTTP_SERVER_URL="http://127.0.0.1:5004"
 
 ENTRYPOINT ["rollup-init"]
-CMD ["dapp"]
+CMD ["diffusers-rs"]
