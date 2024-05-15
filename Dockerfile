@@ -52,8 +52,15 @@ FROM --platform=linux/riscv64 riscv64/ubuntu:22.04
 
 ARG MACHINE_EMULATOR_TOOLS_VERSION=0.14.1
 ADD https://github.com/cartesi/machine-emulator-tools/releases/download/v${MACHINE_EMULATOR_TOOLS_VERSION}/machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb /
-RUN dpkg -i /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb \
+RUN <<EOF
+set -e
+apt-get update
+apt-get install -y --no-install-recommends \
+    busybox-static=1:1.30.1-7ubuntu3 \
+    libfuse2=2.9.9-5ubuntu3 # Install libfuse2 dependency
+dpkg -i /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb \
     && rm /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb
+EOF
 
 LABEL io.cartesi.rollups.sdk_version=0.6.0
 LABEL io.cartesi.rollups.ram_size=128Mi
