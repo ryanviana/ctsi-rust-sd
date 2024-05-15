@@ -47,8 +47,8 @@ WORKDIR /opt/cartesi/dapp
 RUN git clone https://github.com/LaurentMazare/diffusers-rs.git
 WORKDIR /opt/cartesi/dapp/diffusers-rs
 
-# Build the diffusers-rs project
-RUN cargo build --release
+# Build the diffusers-rs project for riscv64gc target
+RUN cargo build --release --target=riscv64gc-unknown-linux-gnu
 
 FROM --platform=linux/riscv64 riscv64/ubuntu:22.04
 
