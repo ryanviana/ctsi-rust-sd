@@ -50,8 +50,8 @@ WORKDIR /opt/cartesi/dapp/diffusers-rs
 # Build the diffusers-rs project
 RUN cargo build --release --target=riscv64gc-unknown-linux-gnu
 
-# Debugging: List the contents of the target directory
-RUN ls -l /opt/cartesi/dapp/diffusers-rs/target/riscv64gc-unknown-linux-gnu/release
+# Debugging: List the contents of the entire target directory
+RUN ls -l /opt/cartesi/dapp/diffusers-rs/target
 
 FROM --platform=linux/riscv64 riscv64/ubuntu:22.04
 
