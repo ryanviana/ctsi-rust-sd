@@ -16,7 +16,7 @@ apt install -y --no-install-recommends \
     g++-riscv64-linux-gnu=4:11.2.0--1ubuntu1 \
     wget=1.21.2-2ubuntu1 \
     git=1:2.34.1-1ubuntu1.9 \
-    libssl-dev
+    libssl-dev=3.0.2-0ubuntu1.10
 EOF
 
 RUN set -eux; \
@@ -47,8 +47,11 @@ WORKDIR /opt/cartesi/dapp
 RUN git clone https://github.com/LaurentMazare/diffusers-rs.git
 WORKDIR /opt/cartesi/dapp/diffusers-rs
 
-# Build the diffusers-rs project for riscv64gc target
+# Build the diffusers-rs project
 RUN cargo build --release --target=riscv64gc-unknown-linux-gnu
+
+# Debugging: List the contents of the target directory
+RUN ls -l /opt/cartesi/dapp/diffusers-rs/target/riscv64gc-unknown-linux-gnu/release
 
 FROM --platform=linux/riscv64 riscv64/ubuntu:22.04
 
@@ -73,6 +76,8 @@ EOF
 ENV PATH="/opt/cartesi/bin:/opt/cartesi/dapp:${PATH}"
 
 WORKDIR /opt/cartesi/dapp
+# Verify the existence of the binary before copying
+RUN ls -l /opt/cartesi/dapp/diffusers-rs/target/riscv64gc-unknown-linux-gnu/release
 COPY --from=builder /opt/cartesi/dapp/diffusers-rs/target/riscv64gc-unknown-linux-gnu/release/diffusers-rs .
 
 ENV ROLLUP_HTTP_SERVER_URL="http://127.0.0.1:5004"
