@@ -51,14 +51,14 @@ WORKDIR /opt/cartesi/dapp/diffusers-rs
 RUN cargo build --release --target=riscv64gc-unknown-linux-gnu
 
 # Debugging: List the contents of the entire target directory
-RUN ls -l /opt/cartesi/dapp/diffusers-rs/target
+RUN ls -lR /opt/cartesi/dapp/diffusers-rs/target
 
 FROM --platform=linux/riscv64 riscv64/ubuntu:22.04
 
 ARG MACHINE_EMULATOR_TOOLS_VERSION=0.14.1
 ADD https://github.com/cartesi/machine-emulator-tools/releases/download/v${MACHINE_EMULATOR_TOOLS_VERSION}/machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb /
-RUN dpkg -i /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb \
-    && rm /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb
+RUN dpkg -i /machine-emulator-tools-v0.14.1.deb \
+    && rm /machine-emulator-tools-v0.14.1.deb
 
 LABEL io.cartesi.rollups.sdk_version=0.6.0
 LABEL io.cartesi.rollups.ram_size=128Mi
