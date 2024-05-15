@@ -13,10 +13,8 @@ apt update
 apt install -y --no-install-recommends \
     build-essential=12.9ubuntu3 \
     ca-certificates=20230311ubuntu0.22.04.1 \
-    g++-riscv64-linux-gnu=4:11.2.0--1ubuntu1 \
-    wget=1.21.2-2ubuntu1 \
-    git=1:2.34.1-1ubuntu1.9 \
-    libssl-dev=3.0.2-0ubuntu1.10
+    g++-riscv64-linux-gnu=4:11.2.0-1ubuntu1 \
+    wget=1.21.2-2ubuntu1
 EOF
 
 RUN set -eux; \
@@ -41,24 +39,20 @@ RUN set -eux; \
 
 RUN rustup target add riscv64gc-unknown-linux-gnu
 
-WORKDIR /opt/cartesi/dapp
-
 # Clone the diffusers-rs repository
-RUN git clone https://github.com/LaurentMazare/diffusers-rs.git
-WORKDIR /opt/cartesi/dapp/diffusers-rs
+RUN git clone https://github.com/LaurentMazare/diffusers-rs /opt/cartesi/diffusers-rs
 
-# Build the diffusers-rs project
-RUN cargo build --release --target=riscv64gc-unknown-linux-gnu
-
-# Debugging: List the contents of the entire target directory
-RUN ls -lR /opt/cartesi/dapp/diffusers-rs/target
+# Change directory to your dapp and build it
+WORKDIR /opt/cartesi/dapp
+COPY . .
+RUN cargo build --release
 
 FROM --platform=linux/riscv64 riscv64/ubuntu:22.04
 
 ARG MACHINE_EMULATOR_TOOLS_VERSION=0.14.1
 ADD https://github.com/cartesi/machine-emulator-tools/releases/download/v${MACHINE_EMULATOR_TOOLS_VERSION}/machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb /
-RUN dpkg -i /machine-emulator-tools-v0.14.1.deb \
-    && rm /machine-emulator-tools-v0.14.1.deb
+RUN dpkg -i /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb \
+    && rm /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb
 
 LABEL io.cartesi.rollups.sdk_version=0.6.0
 LABEL io.cartesi.rollups.ram_size=128Mi
@@ -76,11 +70,9 @@ EOF
 ENV PATH="/opt/cartesi/bin:/opt/cartesi/dapp:${PATH}"
 
 WORKDIR /opt/cartesi/dapp
-# Verify the existence of the binary before copying
-RUN ls -l /opt/cartesi/dapp/diffusers-rs/target/riscv64gc-unknown-linux-gnu/release
-COPY --from=builder /opt/cartesi/dapp/diffusers-rs/target/riscv64gc-unknown-linux-gnu/release/diffusers-rs .
+COPY --from=builder /opt/cartesi/dapp/target/riscv64gc-unknown-linux-gnu/release/dapp .
 
 ENV ROLLUP_HTTP_SERVER_URL="http://127.0.0.1:5004"
 
 ENTRYPOINT ["rollup-init"]
-CMD ["diffusers-rs"]
+CMD ["dapp"]
