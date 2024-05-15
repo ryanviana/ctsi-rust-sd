@@ -16,7 +16,7 @@ apt install -y --no-install-recommends \
     g++-riscv64-linux-gnu=4:11.2.0--1ubuntu1 \
     wget=1.21.2-2ubuntu1 \
     git=1:2.34.1-1ubuntu1.9 \
-    libssl-dev=3.0.2-0ubuntu1.10
+    libssl-dev
 EOF
 
 RUN set -eux; \
