@@ -14,8 +14,7 @@ apt install -y --no-install-recommends \
     build-essential=12.9ubuntu3 \
     ca-certificates=20230311ubuntu0.22.04.1 \
     g++-riscv64-linux-gnu=4:11.2.0--1ubuntu1 \
-    wget=1.21.2-2ubuntu1 \
-    git=1:2.34.1-1ubuntu1.9 # Added git installation
+    wget=1.21.2-2ubuntu1
 EOF
 
 RUN set -eux; \
@@ -40,10 +39,6 @@ RUN set -eux; \
 
 RUN rustup target add riscv64gc-unknown-linux-gnu
 
-# Clone the diffusers-rs repository
-RUN git clone https://github.com/LaurentMazare/diffusers-rs /opt/cartesi/diffusers-rs
-
-# Change directory to your dapp and build it
 WORKDIR /opt/cartesi/dapp
 COPY . .
 RUN cargo build --release
@@ -52,15 +47,8 @@ FROM --platform=linux/riscv64 riscv64/ubuntu:22.04
 
 ARG MACHINE_EMULATOR_TOOLS_VERSION=0.14.1
 ADD https://github.com/cartesi/machine-emulator-tools/releases/download/v${MACHINE_EMULATOR_TOOLS_VERSION}/machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb /
-RUN <<EOF
-set -e
-apt-get update
-apt-get install -y --no-install-recommends \
-    busybox-static=1:1.30.1-7ubuntu3 \
-    libfuse2=2.9.9-5ubuntu3 # Install libfuse2 dependency
-dpkg -i /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb \
+RUN dpkg -i /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb \
     && rm /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb
-EOF
 
 LABEL io.cartesi.rollups.sdk_version=0.6.0
 LABEL io.cartesi.rollups.ram_size=128Mi
